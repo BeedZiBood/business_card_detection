@@ -14,15 +14,16 @@ import re
 
 BOT_TOKEN='6708684228:AAHMh5eMWTRoVJmSQfca_KsvN0cDevw56Y4'
 
-bot = telebot.TeleBot(token='6708684228:AAHMh5eMWTRoVJmSQfca_KsvN0cDevw56Y4')
+bot = telebot.TeleBot(token=BOT_TOKEN)
 
 @bot.message_handler(content_types=['text', 'photo', 'file'])
 def start(message):
-    if message.content_type == 'photo' or message.content_type == 'file':
+    if message.text == '/start':
+        bot.send_message(message.from_user.id, "Please send a photo")
+    elif message.content_type == 'photo' or message.content_type == 'file':
         bot.send_message(message.from_user.id, "I received message")
         photo = message.photo[-1]  # Get the last (highest resolution) photo size
         file_id = photo.file_id
-        # bot.send_photo(message.from_user.id, file_id)
 
         file_info = bot.get_file(photo.file_id)
         file_path = file_info.file_path
@@ -37,7 +38,7 @@ def start(message):
         # You can further process the image here if needed
 
         # Send a message indicating successful processing
-        bot.send_message(message.from_user.id, "Image processed successfully!")
+        bot.send_message(message.from_user.id, "Image processed successfully!\nWait a minute and I'll send you data")
 
         try:
 
@@ -130,21 +131,29 @@ def start(message):
             ru_names = re.findall(nameExp, corrected_rus_text)
             eng_names = re.findall(nameExp, corrected_eng_text)
 
+            answer = "PHONE NUMBERS\n=============\n"
+
             # show the phone numbers header
             print("PHONE NUMBERS")
             print("=============")
             # loop over the detected phone numbers and print them to our terminal
             for num in phoneNums:
-              print(num.strip())
+                print(num.strip())
+                answer += num.strip() + "\n"
             # show the email addresses header
+
+            answer += "\nEMAILS\n=============\n"
             print("\n")
             print("EMAILS")
             print("======")
             # loop over the detected email addresses and print them to our
             # terminal
             for email in emails:
-              print(email.strip())
+                print(email.strip())
+                answer += email + "\n"
             # show the name/job title header
+
+            answer += "\nNAME/JOB TITLE\n=============\n"
             print("\n")
             print("NAME/JOB TITLE")
             print("==============")
@@ -154,7 +163,10 @@ def start(message):
             #   print(ru_name.strip())
 
             for eng_name in eng_names:
-              print(eng_name.strip())
+                print(eng_name.strip())
+                answer += eng_name + "\n"
+
+            bot.send_message(message.from_user.id, answer)
 
             # print(corrected_eng_text)
             df_information_from_cards = pd.DataFrame(
